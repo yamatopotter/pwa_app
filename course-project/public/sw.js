@@ -1,4 +1,4 @@
-const CACHE_VERSION = "5";
+const CACHE_VERSION = "6";
 
 self.addEventListener("install", (event) => {
   console.log("[Service Worker] Installing Service Worker ...", event);
@@ -8,6 +8,7 @@ self.addEventListener("install", (event) => {
       cache.addAll([
         "/",
         "/index.html",
+        "/offline.html",
         "/src/js/app.js",
         "/src/js/feed.js",
         "/src/js/promise.js",
@@ -44,22 +45,90 @@ self.addEventListener("activate", (event) => {
   return self.clients.claim();
 });
 
+// Cache then Network
 self.addEventListener("fetch", (event) => {
-  // console.log("[Service Worker] Fetching something ...", event);
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-
-      return fetch(event.request)
-        .then((res) => {
-          return caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) => {
-            cache.put(event.request.url, res.clone());
-            return res;
-          });
+  const url = "https://httpbin.org/get";
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) =>
+        fetch(event.request).then((res) => {
+          cache.put(event.request, res.clone);
+          return res;
         })
-        .catch((err) => {});
-    })
-  );
+      )
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+
+        return fetch(event.request)
+          .then((res) => {
+            return caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) => {
+              cache.put(event.request.url, res.clone());
+              return res;
+            });
+          })
+          .catch((err) => {
+            return caches.open(`static-v${CACHE_VERSION}`).then((cache) => {
+              if (event.request.url.indexOf("/help")) {
+                return cache.match("/offline.html");
+              }
+            });
+          });
+      })
+    );
+  }
 });
+
+// Cache first, Network fallback
+// self.addEventListener("fetch", (event) => {
+//   event.respondWith(
+//     caches.match(event.request).then((response) => {
+//       if (response) {
+//         return response;
+//       }
+
+//       return fetch(event.request)
+//         .then((res) => {
+//           return caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) => {
+//             cache.put(event.request.url, res.clone());
+//             return res;
+//           });
+//         })
+//         .catch((err) => {
+//           return caches.open(`static-v${CACHE_VERSION}`).then((cache) => {
+//             return cache.match("/offline.html");
+//           });
+//         });
+//     })
+//   );
+// });
+
+// Cache only method
+// self.addEventListener("fetch", (event) => {
+//   event.respondWith(caches.match(event.request));
+// });
+
+// Network only method
+// self.addEventListener("fetch", (event) => {
+//   event.respondWith(fetch(event.request));
+// });
+
+// Network first, Cache fallback
+// self.addEventListener("fetch", (event) => {
+//   event.respondWith(
+//     fetch(event.request)
+//       .then((res) => {
+//         return caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) => {
+//           cache.put(event.request.url, res.clone());
+//           return res;
+//         });
+//       })
+//       .catch((err) => {
+//         return caches.match(event.request);
+//       })
+//   );
+// });
