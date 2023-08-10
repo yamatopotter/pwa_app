@@ -46,23 +46,42 @@ self.addEventListener("activate", (event) => {
   return self.clients.claim();
 });
 
+const isInArray = (string, array) => {
+  let cachePath;
+  if (string.indexOf(self.origin) === 0) {
+    // request targets domain where we serve the page from (i.e. NOT a CDN)
+    console.log("matched ", string);
+    cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
+  } else {
+    cachePath = string; // store the full request (for CDNs)
+  }
+  return array.indexOf(cachePath) > -1;
+};
+
+// function trimCache(cacheName, maxItems) {
+//   caches.open(cacheName).then((cache) =>
+//     cache.keys().then((keys) => {
+//       if (keys.length > maxItems) {
+//         cache.delete(keys[0]).then(trimCache(cacheName, maxItems));
+//       }
+//     })
+//   );
+// }
+
 // Cache then Network
 self.addEventListener("fetch", (event) => {
-  const url = "https://httpbin.org/get";
+  const url = "https://teste-d4240-default-rtdb.firebaseio.com/posts";
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
       caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) =>
         fetch(event.request).then((res) => {
-          cache.put(event.request, res.clone);
+          // trimCache(`dynamic-v${CACHE_VERSION}`, 20);
+          cache.put(event.request, res.clone());
           return res;
         })
       )
     );
-  } else if (
-    new RegExp("\\b" + STATIC_FILES.join("\\b|\\b") + "\\b").test(
-      event.request.url
-    )
-  ) {
+  } else if (isInArray(event.request.url, STATIC_FILES)) {
     event.respondWith(caches.match(event.request));
   } else {
     event.respondWith(
@@ -74,13 +93,14 @@ self.addEventListener("fetch", (event) => {
         return fetch(event.request)
           .then((res) => {
             return caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) => {
+              // trimCache(`dynamic-v${CACHE_VERSION}`, 20);
               cache.put(event.request.url, res.clone());
               return res;
             });
           })
           .catch((err) => {
             return caches.open(`static-v${CACHE_VERSION}`).then((cache) => {
-              if (event.request.url.indexOf("/help")) {
+              if (event.request.headers.get("accept").includes("text/html")) {
                 return cache.match("/offline.html");
               }
             });
