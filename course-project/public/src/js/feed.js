@@ -1,12 +1,16 @@
-var sharedMomentsArea = document.querySelector("#shared-moments");
-var shareImageButton = document.querySelector("#share-image-button");
-var createPostArea = document.querySelector("#create-post");
-var closeCreatePostModalButton = document.querySelector(
+const sharedMomentsArea = document.querySelector("#shared-moments");
+const shareImageButton = document.querySelector("#share-image-button");
+const createPostArea = document.querySelector("#create-post");
+const closeCreatePostModalButton = document.querySelector(
   "#close-create-post-modal-btn"
 );
+const form = document.querySelector("form");
+const titleInput = document.querySelector("#title");
+const locationInput = document.querySelector("#location");
 
 function openCreatePostModal() {
-  createPostArea.style.display = "block";
+  // createPostArea.style.display = "block";
+  createPostArea.style.transform = "translateY(0)";
   // Abrir a popup para instalar o software caso não tenha instalado
   // if (deferredPrompt) {
   //   deferredPrompt.prompt();
@@ -26,7 +30,8 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.display = "none";
+  createPostArea.style.transform = "translateY(100vh)";
+  // createPostArea.style.display = "none";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -43,8 +48,8 @@ function onSaveButtonClicked(event) {
   }
 }
 
-function clearCards(){
-  while(sharedMomentsArea.hasChildNodes()){
+function clearCards() {
+  while (sharedMomentsArea.hasChildNodes()) {
     sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
   }
 }
@@ -56,7 +61,6 @@ function createCard(data) {
   cardTitle.className = "mdl-card__title";
   cardTitle.style.backgroundImage = `url('${data.image}')`;
   cardTitle.style.backgroundSize = "cover";
-  cardTitle.style.height = "180px";
   cardWrapper.appendChild(cardTitle);
   let cardTitleTextElement = document.createElement("h2");
   cardTitleTextElement.style.color = "white";
@@ -76,10 +80,10 @@ function createCard(data) {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-function updateUI(data){
+function updateUI(data) {
   clearCards();
-  for(let i=0; i<data.length; i++){
-    createCard(data[i])
+  for (let i = 0; i < data.length; i++) {
+    createCard(data[i]);
   }
 }
 
@@ -94,17 +98,69 @@ fetch(url)
     networkDataReceived = true;
     console.log("From Web", data);
     let dataArray = [];
-    for(let key in data){
+    for (let key in data) {
       dataArray.push(data[key]);
     }
     updateUI(dataArray);
   });
 
-if("indexedDB" in window){
-  readAllData('posts').then((data) => {
-    if(!networkDataReceived){
+if ("indexedDB" in window) {
+  readAllData("posts").then((data) => {
+    if (!networkDataReceived) {
       console.log("From cache", data);
       updateUI(data);
     }
-  })
+  });
 }
+
+function sendData() {
+  fetch("https://teste-d4240-default-rtdb.firebaseio.com/posts.json", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      id: new Date.toISOString(),
+      image:
+        "https://firebasestorage.googleapis.com/v0/b/teste-d4240.appspot.com/o/sf-boat.jpg?alt=media&token=25586f70-6b19-480d-ab4b-f08104f528a1",
+      title: titleInput.value,
+      location: locationInput.value,
+    }),
+  }).then((res) => {
+    console.log("Sent data", res);
+    updateUI();
+  });
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (titleInput.value.trim() === "" || locationInput.value.trim() === "") {
+    alert("Please, enter a valid data.");
+    return;
+  }
+
+  closeCreatePostModal();
+
+  if ("serviceWorker" in navigator && "SyncManager" in window) {
+    navigator.serviceWorker.ready.then((sw) => {
+      const post = {
+        id: new Date().toISOString(),
+        title: titleInput.value,
+        location: locationInput.value,
+      };
+      writeData("sync-posts", post)
+        .then(() => sw.sync.register("sync-new-post"))
+        .then(() => {
+          const snackbarContainer = document.querySelector(
+            "#confirmation-toast"
+          );
+          const data = { message: "Your post was saved for syncing" };
+          snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        })
+        .catch((err) => console.log(err));
+    });
+  } else {
+    sendData();
+  }
+});
