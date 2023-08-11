@@ -1,9 +1,13 @@
-const CACHE_VERSION = "6";
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utility.js");
+
+const CACHE_VERSION = "8";
 const STATIC_FILES = [
   "/",
   "/index.html",
   "/offline.html",
   "/src/js/app.js",
+  "/src/js/idb.js",
   "/src/js/feed.js",
   "/src/js/promise.js",
   "/src/js/fetch.js",
@@ -73,13 +77,17 @@ self.addEventListener("fetch", (event) => {
   const url = "https://teste-d4240-default-rtdb.firebaseio.com/posts";
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
-      caches.open(`dynamic-v${CACHE_VERSION}`).then((cache) =>
-        fetch(event.request).then((res) => {
-          // trimCache(`dynamic-v${CACHE_VERSION}`, 20);
-          cache.put(event.request, res.clone());
-          return res;
-        })
-      )
+      fetch(event.request).then((res) => {
+        const clonedRes = res.clone();
+        clearAllData("posts")
+          .then(() => clonedRes.json())
+          .then((data) => {
+            for (const key in data) {
+              writeData("posts", data[key]);
+            }
+          });
+        return res;
+      })
     );
   } else if (isInArray(event.request.url, STATIC_FILES)) {
     event.respondWith(caches.match(event.request));
