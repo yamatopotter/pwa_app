@@ -114,7 +114,7 @@ if ("indexedDB" in window) {
 }
 
 function sendData() {
-  fetch("https://teste-d4240-default-rtdb.firebaseio.com/posts.json", {
+  fetch("https://us-central1-teste-d4240.cloudfunctions.net/storePostData", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -150,7 +150,7 @@ form.addEventListener("submit", (event) => {
         location: locationInput.value,
       };
       writeData("sync-posts", post)
-        .then(() => sw.sync.register("sync-new-post"))
+        .then(() => sw.sync.register("sync-new-posts"))
         .then(() => {
           const snackbarContainer = document.querySelector(
             "#confirmation-toast"

@@ -167,3 +167,42 @@ self.addEventListener("fetch", (event) => {
 //       })
 //   );
 // });
+
+self.addEventListener("sync", (event) => {
+  console.log("[Service Worker] Background Syncing", event);
+  if (event.tag === "sync-new-posts") {
+    console.log("[Service Worker] Syncing new posts");
+    event.waitUntil(
+      readAllData("sync-posts").then((data) => {
+        for (const post of data) {
+          fetch(
+            "https://us-central1-teste-d4240.cloudfunctions.net/storePostData",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                id: post.id,
+                image:
+                  "https://firebasestorage.googleapis.com/v0/b/teste-d4240.appspot.com/o/sf-boat.jpg?alt=media&token=25586f70-6b19-480d-ab4b-f08104f528a1",
+                title: post.title,
+                location: post.location,
+              }),
+            }
+          )
+            .then((res) => {
+              console.log("Sent data", res);
+              if (res.ok) {
+                res.json().then((resData) => {
+                  deleteItemFromData("sync-posts", resData.id);
+                });
+              }
+            })
+            .catch((err) => console.log("Error while sending data", err));
+        }
+      })
+    );
+  }
+});
