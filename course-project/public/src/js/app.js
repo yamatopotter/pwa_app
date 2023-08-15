@@ -116,6 +116,5 @@ const configurePushSub = () => {
 // navigator.serviceWorker.getRegistrations().then(function (registrations) {
 //   for (let registration of registrations) {
 //     registration.unregister();
-//  pvt:nL2K3wKy_KlB6wcv6bHtOs - x - _vmEku4YCMbYrU1b0Q;
 //   }
 // });
