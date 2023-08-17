@@ -45,16 +45,15 @@ const deleteItemFromData = (st, id) => {
     .then(() => console.log("Item deleted."));
 };
 
-const urlBase64ToUint8Array = (base64String) => {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/")
+function urlBase64ToUint8Array(base64String) {
+  var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
 
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length);
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
 
-  for (let i =0; i<rawData.length; i++){
+  for (var i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
-
   return outputArray;
-};
+}

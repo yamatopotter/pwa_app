@@ -57,7 +57,7 @@ const askForNotificationsPermission = () => {
     if (result !== "granted") {
       console.log("No notification permission granted!");
     } else {
-      displayConfirmNotification();
+      configurePushSub();
     }
   });
 };
@@ -89,10 +89,13 @@ const configurePushSub = () => {
         const vapidKey =
           "BL610ZNW5qPH70nUHPEB4pGWXCXgrGdtq3CzndvQng1a75-HkURz26mnBu6nuZAOizJc6ONfZOU8yAtDnP0l8Ng";
         const convertedVapidPublicKey = urlBase64ToUint8Array(vapidKey);
-        reg.pushManager.subscribe({
+        return reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidPublicKey,
         });
+      }
+      else{
+        alert("Subscription we have")
       }
     })
     .then((newsub) => {
@@ -109,6 +112,7 @@ const configurePushSub = () => {
       );
     })
     .then((res) => {
+      console.log(res)
       if (res.ok) {
         displayConfirmNotification();
       }

@@ -39,7 +39,8 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
             endpoint: subscription.val().endpoint,
             keys: {
               auth:subscription.val().keys.auth,
-              p256dh: subscription.val().keys.p256dh
+              p256dh: subscription.val().keys.p256dh,
+              openUrl: "/"
             }
           }
 
