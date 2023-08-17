@@ -28,8 +28,8 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
       .then(function () {
         webpush.setVapidDetails(
           "mailto:matheuspbarreto@hotmail.com.br",
-          "BOBTLKBzVfcjGVFCGjI9Mu3VqqfWbzB37_hot4ZOq-FDV1bokH4uW0OSkV582IIUDt5r0MHnwXO90Q0VunLsgB4",
-          "nL2K3wKy_KlB6wcv6bHtOs - x - _vmEku4YCMbYrU1b0Q"
+          "BL610ZNW5qPH70nUHPEB4pGWXCXgrGdtq3CzndvQng1a75-HkURz26mnBu6nuZAOizJc6ONfZOU8yAtDnP0l8Ng",
+          "557NhVI_ZugaXeU0Ut4hiujbaMi_AuqoCnOESG7Z0l8"
         );
         return admin.database().ref("subscriptions").once("value");
       })

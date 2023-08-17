@@ -87,7 +87,7 @@ const configurePushSub = () => {
     .then((sub) => {
       if (sub === null) {
         const vapidKey =
-          "BOBTLKBzVfcjGVFCGjI9Mu3VqqfWbzB37_hot4ZOq-FDV1bokH4uW0OSkV582IIUDt5r0MHnwXO90Q0VunLsgB4";
+          "BL610ZNW5qPH70nUHPEB4pGWXCXgrGdtq3CzndvQng1a75-HkURz26mnBu6nuZAOizJc6ONfZOU8yAtDnP0l8Ng";
         const convertedVapidPublicKey = urlBase64ToUint8Array(vapidKey);
         reg.pushManager.subscribe({
           userVisibleOnly: true,
@@ -96,14 +96,17 @@ const configurePushSub = () => {
       }
     })
     .then((newsub) => {
-      return fetch("https://teste-d4240-default-rtdb.firebaseio.com/subscriptions.json", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(newsub),
-      });
+      return fetch(
+        "https://teste-d4240-default-rtdb.firebaseio.com/subscriptions.json",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(newsub),
+        }
+      );
     })
     .then((res) => {
       if (res.ok) {
