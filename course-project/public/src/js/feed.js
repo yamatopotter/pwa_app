@@ -7,10 +7,47 @@ const closeCreatePostModalButton = document.querySelector(
 const form = document.querySelector("form");
 const titleInput = document.querySelector("#title");
 const locationInput = document.querySelector("#location");
+const videoPlayer = document.querySelector("#player");
+const canvasElement = document.querySelector("#canvas");
+const captureButton = document.querySelector("#capture-btn");
+const imagePicker = document.querySelector("#image-picker");
+const imagePickerArea = document.querySelector("#pick-image");
+
+function initializeMedia() {
+  if (!("mediaDevices" in navigator)) {
+    navigator.mediaDevices = {};
+  }
+
+  if (!("getUserMedia" in navigator.mediaDevices)) {
+    navigator.mediaDevices.getUserMedia = (constraints) => {
+      const getUserMedia =
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;
+
+      if (!getUserMedia) {
+        return Promise.reject(new Error("getUserMedia is not available"));
+      }
+
+      return new Promise((resolve, reject) => {
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      });
+    };
+  }
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      videoPlayer.stream = stream;
+      videoPlayer.style.display = "block";
+    })
+    .catch((err) => (imagePickerArea.style.display = "block"));
+}
 
 function openCreatePostModal() {
   // createPostArea.style.display = "block";
   createPostArea.style.transform = "translateY(0)";
+  initializeMedia();
   // Abrir a popup para instalar o software caso não tenha instalado
   // if (deferredPrompt) {
   //   deferredPrompt.prompt();
@@ -31,6 +68,9 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
   createPostArea.style.transform = "translateY(100vh)";
+  imagePickerArea.style.display = "none";
+  videoPlayer.style.display = "none";
+  canvasElement.style.display = "none";
   // createPostArea.style.display = "none";
 }
 
