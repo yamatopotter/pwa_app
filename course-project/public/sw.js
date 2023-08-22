@@ -175,21 +175,17 @@ self.addEventListener("sync", (event) => {
     event.waitUntil(
       readAllData("sync-posts").then((data) => {
         for (const post of data) {
+          let postData = new FormData();
+          postData.append("id", post.id);
+          postData.append("title", post.title);
+          postData.append("location", post.location);
+          postData.append("file", post.picture, post.id + ".png");
+
           fetch(
             "https://us-central1-teste-d4240.cloudfunctions.net/storePostData",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify({
-                id: post.id,
-                image:
-                  "https://firebasestorage.googleapis.com/v0/b/teste-d4240.appspot.com/o/sf-boat.jpg?alt=media&token=25586f70-6b19-480d-ab4b-f08104f528a1",
-                title: post.title,
-                location: post.location,
-              }),
+              body:postData,
             }
           )
             .then((res) => {
@@ -241,7 +237,7 @@ self.addEventListener("push", (event) => {
   let data = {
     title: "New!",
     content: "Something happened!",
-    openUrl: "/help"
+    openUrl: "/help",
   };
 
   if (event.data) {

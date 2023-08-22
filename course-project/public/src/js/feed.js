@@ -12,6 +12,7 @@ const canvasElement = document.querySelector("#canvas");
 const captureButton = document.querySelector("#capture-btn");
 const imagePicker = document.querySelector("#image-picker");
 const imagePickerArea = document.querySelector("#pick-image");
+let picture;
 
 function initializeMedia() {
   if (!("mediaDevices" in navigator)) {
@@ -43,6 +44,23 @@ function initializeMedia() {
     })
     .catch((err) => (imagePickerArea.style.display = "block"));
 }
+
+captureButton.addEventListener("click", (event) => {
+  canvasElement.style.display = "block";
+  videoPlayer.style.display = "none";
+  captureButton.style.display = "none";
+
+  const context = canvasElement.getContext("2d");
+  context.drawImage(
+    videoPlayer,
+    0,
+    0,
+    canvasElement.width,
+    videoPlayer.videoHeight / (videoPlayer.videoWidth / canvasElement.width)
+  );
+  videoPlayer.srcObject.getVideoTracks().forEach((track) => track.stop());
+  picture = dataURItoBlob(canvasElement.toDataURL());
+});
 
 function openCreatePostModal() {
   // createPostArea.style.display = "block";
@@ -154,6 +172,12 @@ if ("indexedDB" in window) {
 }
 
 function sendData() {
+  let postData = new FormData();
+  postData.append("id", new Date.toISOString());
+  postData.append("title", titleInput.title);
+  postData.append("location", locationInput.location);
+  postData.append("file", post.picture, post.id + ".png");
+
   fetch("https://us-central1-teste-d4240.cloudfunctions.net/storePostData", {
     method: "POST",
     headers: {
