@@ -58,9 +58,14 @@ captureButton.addEventListener("click", (event) => {
     canvasElement.width,
     videoPlayer.videoHeight / (videoPlayer.videoWidth / canvasElement.width)
   );
+
   videoPlayer.srcObject.getVideoTracks().forEach((track) => track.stop());
   picture = dataURItoBlob(canvasElement.toDataURL());
 });
+
+imagePicker.addEventListener("change", (event) => {
+  picture = event.target.files[0];
+})
 
 function openCreatePostModal() {
   // createPostArea.style.display = "block";
@@ -172,25 +177,16 @@ if ("indexedDB" in window) {
 }
 
 function sendData() {
-  let postData = new FormData();
-  postData.append("id", new Date.toISOString());
-  postData.append("title", titleInput.title);
-  postData.append("location", locationInput.location);
-  postData.append("file", post.picture, post.id + ".png");
+  const postData = new FormData();
+  const id = new Date.toISOString();
+  postData.append("id", id);
+  postData.append("title", titleInput.value);
+  postData.append("location", locationInput.value);
+  postData.append("file", picture, id + ".png");
 
   fetch("https://us-central1-teste-d4240.cloudfunctions.net/storePostData", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      id: new Date.toISOString(),
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/teste-d4240.appspot.com/o/sf-boat.jpg?alt=media&token=25586f70-6b19-480d-ab4b-f08104f528a1",
-      title: titleInput.value,
-      location: locationInput.value,
-    }),
+    body: postData,
   }).then((res) => {
     console.log("Sent data", res);
     updateUI();
@@ -212,6 +208,7 @@ form.addEventListener("submit", (event) => {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
+        picture: picture
       };
       writeData("sync-posts", post)
         .then(() => sw.sync.register("sync-new-posts"))

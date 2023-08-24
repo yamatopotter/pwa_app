@@ -11,6 +11,7 @@ const STATIC_FILES = [
   "/src/js/feed.js",
   "/src/js/promise.js",
   "/src/js/fetch.js",
+  "/src/js/utility.js",
   "/src/js/material.min.js",
   "/src/css/app.css",
   "/src/css/feed.css",
@@ -175,7 +176,7 @@ self.addEventListener("sync", (event) => {
     event.waitUntil(
       readAllData("sync-posts").then((data) => {
         for (const post of data) {
-          let postData = new FormData();
+          const postData = new FormData();
           postData.append("id", post.id);
           postData.append("title", post.title);
           postData.append("location", post.location);

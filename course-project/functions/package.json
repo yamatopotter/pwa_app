@@ -7,16 +7,19 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "web-push": "web-push" 
+    "web-push": "web-push"
   },
   "engines": {
     "node": "18"
   },
   "main": "index.js",
   "dependencies": {
+    "@google-cloud/storage": "^1.7.0",
     "cors": "^2.8.5",
     "firebase-admin": "^11.10.1",
     "firebase-functions": "^4.3.1",
+    "formidable": "^3.5.0",
+    "uuid-v4": "^0.1.0",
     "web-push": "^3.6.4"
   },
   "devDependencies": {
