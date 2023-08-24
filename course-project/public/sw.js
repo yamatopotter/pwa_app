@@ -1,7 +1,7 @@
 importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
-const CACHE_VERSION = "8";
+const CACHE_VERSION = "9";
 const STATIC_FILES = [
   "/",
   "/index.html",
@@ -180,6 +180,8 @@ self.addEventListener("sync", (event) => {
           postData.append("id", post.id);
           postData.append("title", post.title);
           postData.append("location", post.location);
+          postData.append("rawLocationLng", post.rawLocation.lng);
+          postData.append("rawLocationLat", post.rawLocation.lat);
           postData.append("file", post.picture, post.id + ".png");
 
           fetch(
